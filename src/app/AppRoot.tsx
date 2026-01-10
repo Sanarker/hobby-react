@@ -3,14 +3,15 @@ import {
   ThemeProvider,
   CssBaseline,
   useMediaQuery,
+  Box,
 } from '@mui/material';
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 
-
 import { getTheme } from './theme';
 import { ColorModeContext } from './ColorModeContext';
 import App from '../App';
+import TopBar from './TopBar';
 
 export default function AppRoot(): JSX.Element {
   const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
@@ -42,7 +43,15 @@ export default function AppRoot(): JSX.Element {
       <LocalizationProvider dateAdapter={AdapterDayjs}>
         <ThemeProvider theme={theme}>
           <CssBaseline />
-          <App />
+
+          {/* ✅ APP BAR (this was missing) */}
+          <TopBar />
+
+          {/* ✅ PAGE CONTENT */}
+          <Box sx={{ p: 3 }}>
+            <App />
+          </Box>
+
         </ThemeProvider>
       </LocalizationProvider>
     </ColorModeContext.Provider>

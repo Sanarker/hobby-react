@@ -1,22 +1,19 @@
-import { AppBar, Toolbar, Typography, Box } from '@mui/material';
-import ThemeToggle from './components/common/ThemeToggle';
-import Home from './pages/home';
+import { useState } from 'react';
+import { AnimatedContainer } from './components/AnimatedContainer';
+import UsersTable from './components/tables/usersTable';
 
 export default function App() {
-  return (
-    <>
-      <AppBar position="static">
-        <Toolbar>
-          <Typography variant="h6" sx={{ flexGrow: 1 }}>
-            Hobby React
-          </Typography>
-          <ThemeToggle />
-        </Toolbar>
-      </AppBar>
+  const [open, setOpen] = useState(true);
 
-      <Box sx={{ mt: 2 }}>
-        <Home />
-      </Box>
-    </>
+  return (
+    <div style={{ padding: 40 }}>
+      <button onClick={() => setOpen(o => !o)}>
+        Toggle Table
+      </button>
+
+      <AnimatedContainer>
+        {open && <UsersTable />}
+      </AnimatedContainer>
+    </div>
   );
 }

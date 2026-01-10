@@ -1,5 +1,6 @@
 import { MaterialReactTable, type MRT_ColumnDef } from 'material-react-table';
 import { useMemo } from 'react';
+import { useAutoAnimate } from '@formkit/auto-animate/react';
 import type { User } from '../../schemas/user.schema';
 
 const data: User[] = [
@@ -8,6 +9,8 @@ const data: User[] = [
 ];
 
 export default function UsersTable() {
+  const [parent] = useAutoAnimate();
+
   const columns = useMemo<MRT_ColumnDef<User>[]>(
     () => [
       { accessorKey: 'id', header: 'ID' },
@@ -18,5 +21,13 @@ export default function UsersTable() {
     []
   );
 
-  return <MaterialReactTable columns={columns} data={data} />;
+  return (
+    <MaterialReactTable
+      columns={columns}
+      data={data}
+      muiTableBodyProps={{
+        ref: parent,
+      }}
+    />
+  );
 }
