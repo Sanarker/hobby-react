@@ -18,6 +18,8 @@ jobs:
       - name: Install and Build 🔧
         run: |
           npm install
+          # Explicitly install Linux-specific rollup binary to fix platform mismatch
+          npm install @rollup/rollup-linux-x64-gnu
           npm run build
 
       - name: Deploy 🚀
