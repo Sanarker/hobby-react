@@ -4,7 +4,7 @@ import { useAutoAnimate } from '@formkit/auto-animate/react';
 import type { User } from '../../schemas/user.schema';
 
 const data: User[] = [
-  { id: 1, name: 'John Doe', email: 'john@test.com', age: 28 },
+  { id: 1, name: 'Sanatsu Ryuu', email: 'john@test.com', age: 28 },
   { id: 2, name: 'Jane Smith', email: 'jane@test.com', age: 32 },
 ];
 

@@ -7,11 +7,14 @@ import {
 } from '@mui/material';
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { HashRouter, Routes, Route } from 'react-router-dom';
 
 import { getTheme } from './theme';
 import { ColorModeContext } from './ColorModeContext';
 import App from '../App';
 import TopBar from './TopBar';
+import Resume from '../pages/Resume';
+import PokeResume from '../pages/PokeResume';
 
 export default function AppRoot(): JSX.Element {
   const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
@@ -43,17 +46,19 @@ export default function AppRoot(): JSX.Element {
       <LocalizationProvider dateAdapter={AdapterDayjs}>
         <ThemeProvider theme={theme}>
           <CssBaseline />
-
-          {/* ✅ APP BAR (this was missing) */}
-          <TopBar />
-
-          {/* ✅ PAGE CONTENT */}
-          <Box sx={{ p: 3 }}>
-            <App />
-          </Box>
-
+          <HashRouter>
+            <TopBar />
+            <Box sx={{ minHeight: 'calc(100vh - 64px)' }}>
+              <Routes>
+                <Route path="/" element={<App />} />
+                <Route path="/resume" element={<Resume />} />
+                <Route path="/poke-resume" element={<PokeResume />} />
+              </Routes>
+            </Box>
+          </HashRouter>
         </ThemeProvider>
       </LocalizationProvider>
     </ColorModeContext.Provider>
   );
 }
+
