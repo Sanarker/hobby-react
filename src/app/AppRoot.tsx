@@ -15,6 +15,9 @@ import App from '../App';
 import TopBar from './TopBar';
 import Resume from '../pages/Resume';
 import PokeResume from '../pages/PokeResume';
+import GenshinResume from '../pages/GenshinResume';
+import VijayResume from '../pages/VijayResume';
+import LeoResume from '../pages/LeoResume';
 
 export default function AppRoot(): JSX.Element {
   const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
@@ -53,6 +56,9 @@ export default function AppRoot(): JSX.Element {
                 <Route path="/" element={<App />} />
                 <Route path="/resume" element={<Resume />} />
                 <Route path="/poke-resume" element={<PokeResume />} />
+                <Route path="/genshin-resume" element={<GenshinResume />} />
+                <Route path="/vijay-resume" element={<VijayResume />} />
+                <Route path="/leo-resume" element={<LeoResume />} />
               </Routes>
             </Box>
           </HashRouter>

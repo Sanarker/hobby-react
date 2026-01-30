@@ -1,5 +1,42 @@
-import { Container, Typography, Paper, Box, Grid, Chip, Divider, Button, useTheme } from '@mui/material';
+import { Container, Typography, Paper, Box, Grid, Divider, Button, useTheme, Stack } from '@mui/material';
+import { motion } from 'framer-motion';
 import { PokeReveal } from '../components/animations/PokeReveal';
+import { MouseTrail } from '../components/animations/MouseTrail';
+
+// High-fidelity Dialogue Component
+const DialogueBox = ({ text, delay = 0, isDark }: { text: string, delay?: number, isDark: boolean }) => (
+    <motion.div
+        initial={{ scaleY: 0 }}
+        animate={{ scaleY: 1 }}
+        transition={{ duration: 0.4, delay }}
+        style={{ transformOrigin: 'top' }}
+    >
+        <Box sx={{
+            border: isDark ? '4px solid #fff' : '4px solid #000',
+            bgcolor: isDark ? '#1a1a1a' : '#fff',
+            p: 2,
+            position: 'relative',
+            '&::after': {
+                content: '""',
+                position: 'absolute',
+                bottom: -12, right: 20,
+                width: 0, height: 0,
+                borderLeft: '10px solid transparent',
+                borderRight: '10px solid transparent',
+                borderTop: isDark ? '10px solid #fff' : '10px solid #000'
+            }
+        }}>
+            <Typography sx={{
+                fontFamily: '"Press Start 2P", cursive',
+                fontSize: '0.8rem',
+                lineHeight: 2,
+                color: isDark ? '#fff' : '#000'
+            }}>
+                {text}
+            </Typography>
+        </Box>
+    </motion.div>
+);
 
 export default function PokeResume() {
     const theme = useTheme();
@@ -8,7 +45,7 @@ export default function PokeResume() {
 
     const emeraldColors = {
         primary: isDark ? '#00e676' : '#00a86b',
-        background: isDark ? '#121212' : '#e0f2f1',
+        background: isDark ? '#1a2a1a' : '#e0f2f1',
         border: isDark ? '#00c853' : '#004d40',
         accent: '#ffa000',
         black: '#000000',
@@ -16,17 +53,17 @@ export default function PokeResume() {
     };
 
     const GBABoxStyles = {
-        border: `4px solid ${emeraldColors.black}`,
-        boxShadow: `inset -4px -4px 0px 0px rgba(0,0,0,0.2), 0 4px 0 0 ${emeraldColors.black}`,
+        border: `4px solid ${isDark ? emeraldColors.white : emeraldColors.black}`,
+        boxShadow: isDark
+            ? `inset -4px -4px 0px 0px rgba(255,255,255,0.1), 0 4px 0 0 ${emeraldColors.white}`
+            : `inset -4px -4px 0px 0px rgba(0,0,0,0.2), 0 4px 0 0 ${emeraldColors.black}`,
         borderRadius: '4px',
-        backgroundColor: isDark ? 'rgba(0,0,0,0.8)' : 'rgba(255,255,255,0.9)',
+        backgroundColor: isDark ? '#000' : '#fff',
         position: 'relative' as const,
-        '&::before': {
-            content: '""',
-            position: 'absolute',
-            top: 0, left: 0, right: 0, bottom: 0,
-            border: `2px solid rgba(255,255,255,0.3)`,
-            pointerEvents: 'none'
+        zIndex: 1,
+        transition: 'transform 0.2s',
+        '&:hover': {
+            transform: 'scale(1.02)'
         }
     };
 
@@ -34,154 +71,182 @@ export default function PokeResume() {
         <Box sx={{
             minHeight: '100vh',
             bgcolor: emeraldColors.background,
-            pt: 10,
-            pb: 10,
+            pt: 10, pb: 10,
             position: 'relative',
             overflow: 'hidden',
-            // Retro Scanlines
-            '&::after': {
-                content: '""',
-                position: 'fixed',
-                top: 0, left: 0, width: '100%', height: '100%',
-                background: 'repeating-linear-gradient(0deg, rgba(0,0,0,0.05) 0px, rgba(0,0,0,0.05) 1px, transparent 1px, transparent 2px)',
-                pointerEvents: 'none',
-                zIndex: 9999
-            }
+            // High-Fidelity Retro Background
+            background: `radial-gradient(circle at 50% 50%, ${emeraldColors.background} 0%, #000 150%)`,
         }}>
+            <MouseTrail color={emeraldColors.primary} />
+            {/* CRT Flicker Overlay */}
+            <Box sx={{
+                position: 'fixed', top: 0, left: 0, width: '100%', height: '100%',
+                pointerEvents: 'none', zIndex: 10000,
+                background: 'rgba(18, 16, 16, 0.05)',
+                opacity: 0.1,
+                animation: 'flicker 0.15s infinite'
+            }} />
+
+            {/* Retro Scanlines */}
+            <Box sx={{
+                position: 'fixed', top: 0, left: 0, width: '100%', height: '100%',
+                background: 'repeating-linear-gradient(0deg, rgba(0,0,0,0.1) 0px, rgba(0,0,0,0.1) 1px, transparent 1px, transparent 3px)',
+                pointerEvents: 'none', zIndex: 9999
+            }} />
+
+            <style>
+                {`
+                @keyframes flicker {
+                    0% { opacity: 0.1; }
+                    50% { opacity: 0.08; }
+                    100% { opacity: 0.11; }
+                }
+                @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+                `}
+            </style>
+
             <Container maxWidth="md" sx={{ position: 'relative', zIndex: 1 }}>
                 <PokeReveal>
                     <Box sx={{
-                        p: 4,
-                        mb: 6,
-                        textAlign: 'center',
+                        p: 6, mb: 6, textAlign: 'center',
                         ...GBABoxStyles,
-                        borderColor: emeraldColors.primary
+                        borderColor: emeraldColors.primary,
+                        background: isDark ? 'linear-gradient(180deg, #1a2a1a 0%, #000 100%)' : '#fff'
                     }}>
-                        <Typography variant="h2" fontWeight="bold" sx={{
-                            color: emeraldColors.primary,
-                            fontFamily: 'monospace',
-                            textShadow: isDark ? '2px 2px #000' : '2px 2px #ccc'
+                        <motion.div
+                            animate={{ scale: [1, 1.05, 1] }}
+                            transition={{ duration: 4, repeat: Infinity }}
+                        >
+                            <Typography variant="h2" sx={{
+                                color: emeraldColors.primary,
+                                fontFamily: '"Press Start 2P", cursive',
+                                fontSize: { xs: '1.2rem', md: '2.5rem' },
+                                textShadow: `4px 4px 0px ${emeraldColors.black}`,
+                                mb: 2
+                            }}>
+                                POKEMON MASTER
+                            </Typography>
+                        </motion.div>
+                        <Divider sx={{ mb: 2, border: `2px solid ${emeraldColors.primary}` }} />
+                        <Typography variant="h5" sx={{
+                            fontFamily: '"Press Start 2P", cursive',
+                            fontSize: '0.9rem',
+                            color: emeraldColors.accent
                         }}>
-                            EMERALD SANATSU RYUU
-                        </Typography>
-                        <Typography variant="h5" fontWeight="bold" color="text.secondary" sx={{ fontFamily: 'monospace' }}>
-                            HOENN REGION FULL STACK MASTER
+                            SANATSU RYUU // FULL STACK LVL 99
                         </Typography>
                     </Box>
                 </PokeReveal>
 
-                <PokeReveal delay={0.2}>
-                    <Paper elevation={0} sx={{
-                        p: 4,
-                        mb: 4,
-                        ...GBABoxStyles,
-                        borderLeft: `12px solid ${emeraldColors.primary}`
-                    }}>
-                        <Typography variant="h4" fontWeight="bold" gutterBottom sx={{ color: emeraldColors.primary, fontFamily: 'monospace' }}>
-                            Adventure Log
-                        </Typography>
-                        <Typography variant="body1" sx={{ fontFamily: 'monospace', fontSize: '1.1rem' }}>
-                            Explored the Hoenn region of Web Development for 5+ years.
-                            Captured advanced techniques in TypeScript and modern UI.
-                            Always seeking the Battle Frontier of code!
-                        </Typography>
-                    </Paper>
-                </PokeReveal>
-
                 <Grid container spacing={4}>
-                    <Grid size={{ xs: 12, md: 7 }}>
-                        <PokeReveal delay={0.4}>
-                            <Paper elevation={0} sx={{
-                                p: 4,
-                                mb: 4,
-                                ...GBABoxStyles,
-                                minHeight: '400px'
-                            }}>
-                                <Typography variant="h4" fontWeight="bold" gutterBottom sx={{ color: emeraldColors.primary, fontFamily: 'monospace' }}>
-                                    Gym Badges
-                                </Typography>
-                                <Divider sx={{ mb: 2, bgcolor: emeraldColors.primary }} />
-
-                                <Box sx={{ mb: 3 }}>
-                                    <Typography variant="h6" fontWeight="bold" sx={{ fontFamily: 'monospace' }}>Sootopolis Gym @ TechCorp</Typography>
-                                    <Typography variant="subtitle2" color={emeraldColors.accent} fontWeight="bold">2021 — PRESENT</Typography>
-                                    <Typography variant="body2" sx={{ mt: 1, fontFamily: 'monospace' }}>
-                                        {">"} Mastered Micro-Frontend architecture.<br />
-                                        {">"} Optimized performance with Emerald Precision.
+                    <Grid size={{ xs: 12, md: 8 }}>
+                        <Stack spacing={4}>
+                            <PokeReveal delay={0.2}>
+                                <Paper sx={{ ...GBABoxStyles, p: 4, borderLeft: `12px solid ${emeraldColors.primary}` }}>
+                                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+                                        <Box sx={{ width: 12, height: 12, bgcolor: emeraldColors.primary, mr: 2 }} />
+                                        <Typography variant="h5" sx={{ fontFamily: '"Press Start 2P", cursive', fontSize: '1rem' }}>
+                                            QUEST LOG
+                                        </Typography>
+                                    </Box>
+                                    <DialogueBox text="A wild FULL STACK DEVELOPER appeared! Sanatsu used CLEAN CODE. It's super effective!" delay={0.5} isDark={isDark} />
+                                    <Typography sx={{ mt: 3, fontFamily: 'monospace', fontSize: '1.1rem' }}>
+                                        Explored the Hoenn region of Web Development for 5+ years.
+                                        Captured advanced techniques in TypeScript and modern UI.
                                     </Typography>
-                                </Box>
+                                </Paper>
+                            </PokeReveal>
 
-                                <Box sx={{ mb: 3 }}>
-                                    <Typography variant="h6" fontWeight="bold" sx={{ fontFamily: 'monospace' }}>Petalburg Gym @ WebSolutions</Typography>
-                                    <Typography variant="subtitle2" color={emeraldColors.accent} fontWeight="bold">2018 — 2021</Typography>
-                                    <Typography variant="body2" sx={{ mt: 1, fontFamily: 'monospace' }}>
-                                        {">"} Developed scalable battle-ready applications.<br />
-                                        {">"} Collaborated on high-stakes UI missions.
-                                    </Typography>
-                                </Box>
-                            </Paper>
-                        </PokeReveal>
+                            <PokeReveal delay={0.4}>
+                                <Paper sx={GBABoxStyles}>
+                                    <Box sx={{ bgcolor: emeraldColors.black, p: 2 }}>
+                                        <Typography sx={{ color: '#fff', fontFamily: '"Press Start 2P", cursive', fontSize: '0.8rem' }}>
+                                            GYM BADGES EARNED
+                                        </Typography>
+                                    </Box>
+                                    <Box sx={{ p: 3 }}>
+                                        <Stack spacing={3}>
+                                            <Box sx={{ borderBottom: '2px dashed #ccc', pb: 2 }}>
+                                                <Typography variant="h6" sx={{ fontFamily: 'monospace', fontWeight: 'bold' }}>
+                                                    &gt; TECHCORP GYM (2021-NOW)
+                                                </Typography>
+                                                <Typography sx={{ fontSize: '0.9rem', color: emeraldColors.primary, ml: 2 }}>
+                                                    * Mastered Micro-Frontend Badge
+                                                </Typography>
+                                            </Box>
+                                            <Box>
+                                                <Typography variant="h6" sx={{ fontFamily: 'monospace', fontWeight: 'bold' }}>
+                                                    &gt; WEBSOLUTIONS GYM (2018-2021)
+                                                </Typography>
+                                                <Typography sx={{ fontSize: '0.9rem', color: emeraldColors.primary, ml: 2 }}>
+                                                    * Developed Scalable Architecture Badge
+                                                </Typography>
+                                            </Box>
+                                        </Stack>
+                                    </Box>
+                                </Paper>
+                            </PokeReveal>
+                        </Stack>
                     </Grid>
 
-                    <Grid size={{ xs: 12, md: 5 }}>
+                    <Grid size={{ xs: 12, md: 4 }}>
                         <PokeReveal delay={0.6}>
-                            <Paper elevation={0} sx={{
-                                p: 4,
-                                mb: 4,
-                                ...GBABoxStyles
-                            }}>
-                                <Typography variant="h4" fontWeight="bold" gutterBottom sx={{ color: emeraldColors.primary, fontFamily: 'monospace' }}>
-                                    TM LIST
-                                </Typography>
-                                <Divider sx={{ mb: 2, bgcolor: emeraldColors.primary }} />
-                                <Grid container spacing={1}>
-                                    {skills.map((skill) => (
-                                        <Grid key={skill}>
-                                            <Chip
-                                                label={skill}
-                                                sx={{
-                                                    fontFamily: 'monospace',
-                                                    fontWeight: 'bold',
-                                                    borderRadius: '0px',
-                                                    bgcolor: emeraldColors.black,
-                                                    color: emeraldColors.primary,
-                                                    border: `1px solid ${emeraldColors.primary}`,
-                                                    '&:hover': { bgcolor: emeraldColors.primary, color: emeraldColors.black }
-                                                }}
-                                            />
-                                        </Grid>
-                                    ))}
-                                </Grid>
+                            <Paper sx={{ ...GBABoxStyles, p: 1 }}>
+                                <Box sx={{ bgcolor: emeraldColors.primary, p: 1, textAlign: 'center' }}>
+                                    <Typography sx={{ fontFamily: '"Press Start 2P", cursive', fontSize: '0.7rem' }}>
+                                        TM / HM LIST
+                                    </Typography>
+                                </Box>
+                                <Box sx={{ p: 2 }}>
+                                    <Stack spacing={1}>
+                                        {skills.map((skill, i) => (
+                                            <motion.div key={skill} whileHover={{ x: 10 }}>
+                                                <Box sx={{
+                                                    display: 'flex',
+                                                    justifyContent: 'space-between',
+                                                    p: 1,
+                                                    borderBottom: '1px solid #ddd'
+                                                }}>
+                                                    <Typography sx={{ fontFamily: 'monospace', fontSize: '0.9rem' }}>
+                                                        TM{i + 1} {skill}
+                                                    </Typography>
+                                                    <Typography sx={{ color: emeraldColors.primary }}>PP: 20</Typography>
+                                                </Box>
+                                            </motion.div>
+                                        ))}
+                                    </Stack>
+                                </Box>
                             </Paper>
                         </PokeReveal>
                     </Grid>
                 </Grid>
 
-                <Box sx={{ textAlign: 'center', mt: 4 }}>
-                    <Button
-                        variant="contained"
-                        sx={{
-                            bgcolor: emeraldColors.primary,
-                            color: emeraldColors.black,
-                            fontWeight: 'bold',
-                            fontFamily: 'monospace',
-                            border: `4px solid ${emeraldColors.black}`,
-                            borderRadius: '0px',
-                            fontSize: '1.2rem',
-                            px: 6,
-                            py: 2,
-                            '&:hover': {
-                                bgcolor: emeraldColors.accent,
-                                transform: 'translateY(-4px)',
-                                boxShadow: `0 8px 0 0 ${emeraldColors.black}`
-                            },
-                            transition: 'all 0.1s'
-                        }}
-                    >
-                        USE HM02 (HIRE ME)
-                    </Button>
+                <Box sx={{ textAlign: 'center', mt: 8 }}>
+                    <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+                        <Button
+                            variant="contained"
+                            sx={{
+                                bgcolor: emeraldColors.primary,
+                                color: emeraldColors.black,
+                                fontWeight: 'bold',
+                                fontFamily: '"Press Start 2P", cursive',
+                                border: `4px solid ${emeraldColors.black}`,
+                                borderRadius: '0px',
+                                fontSize: '1rem',
+                                px: 4, py: 2,
+                                boxShadow: `8px 8px 0px ${emeraldColors.black}`,
+                                '&:hover': {
+                                    bgcolor: emeraldColors.accent,
+                                    boxShadow: `4px 4px 0px ${emeraldColors.black}`,
+                                }
+                            }}
+                        >
+                            USE HM02 (HIRE)
+                        </Button>
+                    </motion.div>
                 </Box>
             </Container>
         </Box>
     );
 }
+
