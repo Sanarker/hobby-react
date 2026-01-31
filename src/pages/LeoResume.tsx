@@ -7,7 +7,7 @@ import CoffeeIcon from '@mui/icons-material/Coffee';
 import PetsIcon from '@mui/icons-material/Pets'; // Hyena/Lion vibes
 import WhatshotIcon from '@mui/icons-material/Whatshot';
 import ShieldIcon from '@mui/icons-material/Shield';
-import { MouseTrail } from '../components/animations/MouseTrail';
+
 
 const leoColors = {
     parthi: {

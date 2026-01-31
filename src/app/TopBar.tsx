@@ -1,6 +1,6 @@
 import { AppBar, Toolbar, Typography, Box, Button } from '@mui/material';
 import { Link, useLocation } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import ThemeToggle from '../components/common/ThemeToggle';
 
 const routeThemeMap: Record<string, {
