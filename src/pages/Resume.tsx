@@ -1,6 +1,7 @@
+import { useRef, useState } from 'react';
 import { Container, Typography, Box, Stack, Chip, Grid } from '@mui/material';
 import type { Theme } from '@mui/material';
-import { motion } from 'framer-motion';
+import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion';
 import {
     PersonOutlined as AboutIcon,
     WorkOutlined as ExperienceIcon,
@@ -33,6 +34,188 @@ const itemVariants = {
         }
     }
 } as const;
+
+const KineticText = ({ text }: { text: string }) => {
+    const letters = Array.from(text);
+    const container = {
+        hidden: { opacity: 0 },
+        visible: (i = 1) => ({
+            opacity: 1,
+            transition: { staggerChildren: 0.03, delayChildren: 0.04 * i },
+        }),
+    };
+
+    const child = {
+        visible: {
+            opacity: 1,
+            y: 0,
+            transition: {
+                type: "spring" as const,
+                damping: 12,
+                stiffness: 200,
+            },
+        },
+        hidden: {
+            opacity: 0,
+            y: 20,
+            transition: {
+                type: "spring" as const,
+                damping: 12,
+                stiffness: 200,
+            },
+        },
+    };
+
+    return (
+        <Box
+            component={motion.div}
+            sx={{ display: 'flex', overflow: 'hidden' }}
+            variants={container}
+            initial="hidden"
+            animate="visible"
+        >
+            {letters.map((letter, index) => (
+                <motion.span variants={child} key={index} style={{ display: 'inline-block', whiteSpace: 'pre' }}>
+                    {letter}
+                </motion.span>
+            ))}
+        </Box>
+    );
+};
+
+interface SpotlightCardProps {
+    children: React.ReactNode;
+    style?: any;
+}
+
+const SpotlightCard = ({ children, style }: SpotlightCardProps) => {
+    const cardRef = useRef<HTMLDivElement>(null);
+    const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+    const [isHovered, setIsHovered] = useState(false);
+
+    // 3D Parallax Tilt
+    const x = useMotionValue(0);
+    const y = useMotionValue(0);
+
+    const mouseXSpring = useSpring(x);
+    const mouseYSpring = useSpring(y);
+
+    const rotateX = useTransform(mouseYSpring, [-0.5, 0.5], ["7deg", "-7deg"]);
+    const rotateY = useTransform(mouseXSpring, [-0.5, 0.5], ["-7deg", "7deg"]);
+
+    const handleMouseMove = (e: React.MouseEvent) => {
+        if (!cardRef.current) return;
+        const rect = cardRef.current.getBoundingClientRect();
+
+        const width = rect.width;
+        const height = rect.height;
+
+        const mouseX = e.clientX - rect.left;
+        const mouseY = e.clientY - rect.top;
+
+        const xPct = mouseX / width - 0.5;
+        const yPct = mouseY / height - 0.5;
+
+        x.set(xPct);
+        y.set(yPct);
+        setMousePos({ x: mouseX, y: mouseY });
+    };
+
+    const handleMouseLeave = () => {
+        setIsHovered(false);
+        x.set(0);
+        y.set(0);
+    };
+
+    const handleTouchMove = (e: React.TouchEvent) => {
+        if (!cardRef.current) return;
+        const rect = cardRef.current.getBoundingClientRect();
+        const touch = e.touches[0];
+        setMousePos({ x: touch.clientX - rect.left, y: touch.clientY - rect.top });
+    };
+
+    return (
+        <motion.div
+            style={{
+                perspective: "1000px",
+            }}
+            whileTap={{ scale: 0.98 }}
+        >
+            <Box
+                ref={cardRef}
+                className="spotlight-card"
+                onMouseMove={handleMouseMove}
+                onTouchMove={handleTouchMove}
+                onMouseEnter={() => setIsHovered(true)}
+                onTouchStart={() => setIsHovered(true)}
+                onMouseLeave={handleMouseLeave}
+                onTouchEnd={handleMouseLeave}
+                component={motion.div}
+                style={{
+                    rotateX,
+                    rotateY,
+                    transformStyle: "preserve-3d",
+                }}
+                sx={{
+                    p: { xs: 3, md: 4 },
+                    borderRadius: 4,
+                    bgcolor: 'action.hover',
+                    backdropFilter: 'blur(8px)',
+                    border: '1px solid',
+                    borderColor: 'transparent',
+                    position: 'relative',
+                    overflow: 'hidden',
+                    transition: 'box-shadow 0.4s ease, background 0.4s ease',
+                    ...style,
+                    '&:hover': {
+                        background: (theme: Theme) => `
+                            linear-gradient(${theme.palette.mode === 'dark' ? 'rgba(30,30,30,0.4)' : 'rgba(255,255,255,0.8)'}, ${theme.palette.mode === 'dark' ? 'rgba(30,30,30,0.4)' : 'rgba(255,255,255,0.8)'}) padding-box,
+                            linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 100%) border-box
+                        `,
+                        borderColor: 'transparent',
+                        boxShadow: (theme: Theme) => theme.palette.mode === 'dark'
+                            ? `0 20px 40px -20px ${theme.palette.primary.main}44`
+                            : `0 20px 40px -20px rgba(0,0,0,0.1)`,
+                        '& .section-icon': {
+                            transform: 'scale(1.2) rotate(5deg) translateZ(20px)',
+                            color: 'primary.main',
+                            opacity: 1
+                        }
+                    }
+                }}
+            >
+                {/* Spotlight Glow Overlay */}
+                <Box
+                    sx={{
+                        position: 'absolute',
+                        top: 0, left: 0, right: 0, bottom: 0,
+                        pointerEvents: 'none',
+                        opacity: isHovered ? 1 : 0,
+                        transition: 'opacity 0.4s ease',
+                        background: (theme: Theme) => `
+                            radial-gradient(
+                                600px circle at ${mousePos.x}px ${mousePos.y}px, 
+                                ${theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.03)'}, 
+                                transparent 40%
+                            )
+                        `,
+                        zIndex: 0
+                    }}
+                />
+                <Box
+                    sx={{
+                        position: 'relative',
+                        zIndex: 1,
+                        transform: isHovered ? "translateZ(30px) scale(1.05)" : "translateZ(30px) scale(1)",
+                        transition: 'transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)'
+                    }}
+                >
+                    {children}
+                </Box>
+            </Box>
+        </motion.div>
+    );
+};
 
 export default function Resume() {
     const skills = [
@@ -67,30 +250,6 @@ export default function Resume() {
         { name: "Japanese", level: "Native / Bilingual" },
         { name: "German", level: "Elementary" }
     ];
-
-    const sectionStyle = {
-        p: { xs: 3, md: 4 },
-        borderRadius: 4,
-        bgcolor: 'action.hover',
-        backdropFilter: 'blur(8px)',
-        border: '1px solid',
-        borderColor: 'transparent',
-        transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-        '&:hover': {
-            transform: 'translateY(-6px)',
-            background: (theme: Theme) => `
-                linear-gradient(${theme.palette.mode === 'dark' ? 'rgba(30,30,30,0.4)' : 'rgba(255,255,255,0.8)'}, ${theme.palette.mode === 'dark' ? 'rgba(30,30,30,0.4)' : 'rgba(255,255,255,0.8)'}) padding-box,
-                linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 100%) border-box
-            `,
-            borderColor: 'transparent',
-            boxShadow: (theme: Theme) => `0 20px 40px -20px ${theme.palette.primary.main}44`,
-            '& .section-icon': {
-                transform: 'scale(1.2) rotate(5deg)',
-                color: 'primary.main',
-                opacity: 1
-            }
-        }
-    };
 
     const statusPulse = {
         '@keyframes pulse': {
@@ -163,6 +322,7 @@ export default function Resume() {
                                 <Typography
                                     variant="h2"
                                     fontWeight="800"
+                                    component="div"
                                     sx={{
                                         background: (theme) => `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 100%)`,
                                         WebkitBackgroundClip: 'text',
@@ -172,7 +332,7 @@ export default function Resume() {
                                         lineHeight: 1.1,
                                     }}
                                 >
-                                    Sanatsu Ryuu
+                                    <KineticText text="Sanatsu Ryuu" />
                                 </Typography>
                                 <Box sx={{
                                     width: 12, height: 12,
@@ -203,7 +363,7 @@ export default function Resume() {
                     <Stack spacing={4}>
                         {/* Summary Section */}
                         <motion.div variants={itemVariants}>
-                            <Box component="section" sx={sectionStyle}>
+                            <SpotlightCard>
                                 <Stack direction="row" alignItems="center" spacing={1.5} sx={{ mb: 2.5 }}>
                                     <AboutIcon className="section-icon" sx={{ fontSize: { xs: 18, md: 20 }, color: 'primary.main', opacity: 0.7, transition: 'all 0.4s ease' }} />
                                     <Typography variant="overline" sx={{ fontWeight: 700, letterSpacing: 2, color: 'text.secondary', fontSize: { xs: '0.65rem', md: '0.75rem' } }}>
@@ -214,12 +374,12 @@ export default function Resume() {
                                     Passionate developer with 5+ years of experience building modern web applications.
                                     Focused on creating intuitive user experiences with cutting-edge technologies and clean code practices.
                                 </Typography>
-                            </Box>
+                            </SpotlightCard>
                         </motion.div>
 
                         {/* Experience Section */}
                         <motion.div variants={itemVariants}>
-                            <Box component="section" sx={sectionStyle}>
+                            <SpotlightCard>
                                 <Stack direction="row" alignItems="center" spacing={1.5} sx={{ mb: 3 }}>
                                     <ExperienceIcon className="section-icon" sx={{ fontSize: { xs: 18, md: 20 }, color: 'primary.main', opacity: 0.7, transition: 'all 0.4s ease' }} />
                                     <Typography variant="overline" sx={{ fontWeight: 700, letterSpacing: 2, color: 'text.secondary', fontSize: { xs: '0.65rem', md: '0.75rem' } }}>
@@ -245,12 +405,12 @@ export default function Resume() {
                                         </Typography>
                                     </Box>
                                 </Stack>
-                            </Box>
+                            </SpotlightCard>
                         </motion.div>
 
                         {/* Projects Section */}
                         <motion.div variants={itemVariants}>
-                            <Box component="section" sx={sectionStyle}>
+                            <SpotlightCard>
                                 <Stack direction="row" alignItems="center" spacing={1.5} sx={{ mb: 3 }}>
                                     <ProjectsIcon className="section-icon" sx={{ fontSize: { xs: 18, md: 20 }, color: 'primary.main', opacity: 0.7, transition: 'all 0.4s ease' }} />
                                     <Typography variant="overline" sx={{ fontWeight: 700, letterSpacing: 2, color: 'text.secondary', fontSize: { xs: '0.65rem', md: '0.75rem' } }}>
@@ -271,13 +431,13 @@ export default function Resume() {
                                         </Grid>
                                     ))}
                                 </Grid>
-                            </Box>
+                            </SpotlightCard>
                         </motion.div>
 
                         <Grid container spacing={4}>
                             <Grid size={{ xs: 12, md: 7 }}>
                                 <motion.div variants={itemVariants} style={{ height: '100%' }}>
-                                    <Box component="section" sx={{ ...sectionStyle, height: '100%', boxSizing: 'border-box' }}>
+                                    <SpotlightCard style={{ height: '100%', boxSizing: 'border-box' }}>
                                         <Stack direction="row" alignItems="center" spacing={1.5} sx={{ mb: 2.5 }}>
                                             <CertIcon className="section-icon" sx={{ fontSize: { xs: 18, md: 20 }, color: 'primary.main', opacity: 0.7, transition: 'all 0.4s ease' }} />
                                             <Typography variant="overline" sx={{ fontWeight: 700, letterSpacing: 2, color: 'text.secondary', fontSize: { xs: '0.65rem', md: '0.75rem' } }}>
@@ -292,12 +452,12 @@ export default function Resume() {
                                                 </Box>
                                             ))}
                                         </Stack>
-                                    </Box>
+                                    </SpotlightCard>
                                 </motion.div>
                             </Grid>
                             <Grid size={{ xs: 12, md: 5 }}>
                                 <motion.div variants={itemVariants} style={{ height: '100%' }}>
-                                    <Box component="section" sx={{ ...sectionStyle, height: '100%', boxSizing: 'border-box' }}>
+                                    <SpotlightCard style={{ height: '100%', boxSizing: 'border-box' }}>
                                         <Stack direction="row" alignItems="center" spacing={1.5} sx={{ mb: 2.5 }}>
                                             <LangIcon className="section-icon" sx={{ fontSize: { xs: 18, md: 20 }, color: 'primary.main', opacity: 0.7, transition: 'all 0.4s ease' }} />
                                             <Typography variant="overline" sx={{ fontWeight: 700, letterSpacing: 2, color: 'text.secondary', fontSize: { xs: '0.65rem', md: '0.75rem' } }}>
@@ -312,14 +472,14 @@ export default function Resume() {
                                                 </Box>
                                             ))}
                                         </Stack>
-                                    </Box>
+                                    </SpotlightCard>
                                 </motion.div>
                             </Grid>
                         </Grid>
 
                         {/* Skills Section */}
                         <motion.div variants={itemVariants}>
-                            <Box component="section" sx={sectionStyle}>
+                            <SpotlightCard>
                                 <Stack direction="row" alignItems="center" spacing={1.5} sx={{ mb: 2.5 }}>
                                     <SkillsIcon className="section-icon" sx={{ fontSize: { xs: 18, md: 20 }, color: 'primary.main', opacity: 0.7, transition: 'all 0.4s ease' }} />
                                     <Typography variant="overline" sx={{ fontWeight: 700, letterSpacing: 2, color: 'text.secondary', fontSize: { xs: '0.65rem', md: '0.75rem' } }}>
@@ -352,13 +512,13 @@ export default function Resume() {
                                         </motion.div>
                                     ))}
                                 </Box>
-                            </Box>
+                            </SpotlightCard>
                         </motion.div>
 
                         <Grid container spacing={4}>
                             <Grid size={{ xs: 12, md: 6 }}>
                                 <motion.div variants={itemVariants} style={{ height: '100%' }}>
-                                    <Box component="section" sx={{ ...sectionStyle, height: '100%', boxSizing: 'border-box' }}>
+                                    <SpotlightCard style={{ height: '100%', boxSizing: 'border-box' }}>
                                         <Stack direction="row" alignItems="center" spacing={1.5} sx={{ mb: 2.5 }}>
                                             <EducationIcon className="section-icon" sx={{ fontSize: { xs: 18, md: 20 }, color: 'primary.main', opacity: 0.7, transition: 'all 0.4s ease' }} />
                                             <Typography variant="overline" sx={{ fontWeight: 700, letterSpacing: 2, color: 'text.secondary', fontSize: { xs: '0.65rem', md: '0.75rem' } }}>
@@ -367,12 +527,12 @@ export default function Resume() {
                                         </Stack>
                                         <Typography variant="h6" fontWeight="700" sx={{ fontSize: { xs: '0.95rem', md: '1rem' } }}>BS in Computer Science</Typography>
                                         <Typography variant="subtitle2" color="text.secondary" sx={{ fontWeight: 600, fontSize: '0.85rem' }}>University of Technology, 2018</Typography>
-                                    </Box>
+                                    </SpotlightCard>
                                 </motion.div>
                             </Grid>
                             <Grid size={{ xs: 12, md: 6 }}>
                                 <motion.div variants={itemVariants} style={{ height: '100%' }}>
-                                    <Box component="section" sx={{ ...sectionStyle, height: '100%', boxSizing: 'border-box' }}>
+                                    <SpotlightCard style={{ height: '100%', boxSizing: 'border-box' }}>
                                         <Stack direction="row" alignItems="center" spacing={1.5} sx={{ mb: 2.5 }}>
                                             <HeartIcon className="section-icon" sx={{ fontSize: { xs: 18, md: 20 }, color: 'primary.main', opacity: 0.7, transition: 'all 0.4s ease' }} />
                                             <Typography variant="overline" sx={{ fontWeight: 700, letterSpacing: 2, color: 'text.secondary', fontSize: { xs: '0.65rem', md: '0.75rem' } }}>
@@ -384,7 +544,7 @@ export default function Resume() {
                                             • Deep Learning & AI Ethics<br />
                                             • Strategic Chess & Photography
                                         </Typography>
-                                    </Box>
+                                    </SpotlightCard>
                                 </motion.div>
                             </Grid>
                         </Grid>
