@@ -13,38 +13,9 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Custom Minimalist Scrollbar */
+/* Clean Scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
-}
-
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-::-webkit-scrollbar-thumb {
-  background: rgba(144, 202, 249, 0.2);
-  border-radius: 10px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(144, 202, 249, 0.4);
-}
-
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-
-a:hover {
-  color: #535bf2;
-}
-
-@media (hover: hover) and (pointer: fine) {
-  * {
-    cursor: none !important;
-  }
 }
 
 body {
@@ -98,6 +69,40 @@ button:focus-visible {
 
 /* Elite Selection Style */
 ::selection {
-  background: rgba(144, 202, 249, 0.3);
+  background: rgba(99, 102, 241, 0.25);
   color: inherit;
+}
+
+/* Print Stylesheet for PDF Export */
+@media print {
+  body, html {
+    background: #ffffff !important;
+    color: #0f172a !important;
+    font-size: 11pt !important;
+  }
+
+  header, nav, .MuiAppBar-root, button, .no-print, .MuiSnackbar-root {
+    display: none !important;
+  }
+
+  .spotlight-card {
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    page-break-inside: avoid;
+    break-inside: avoid;
+    margin-bottom: 1rem !important;
+  }
+
+  * {
+    box-shadow: none !important;
+    text-shadow: none !important;
+    background-color: transparent !important;
+  }
+
+  a {
+    color: #0f172a !important;
+    text-decoration: underline !important;
+  }
 }
